@@ -21,9 +21,20 @@ function playIt(song) {
 document.querySelector('.upload').onclick = async () => {
   const file = document.querySelector('input[type=file]').files[0]
   if (file) {
-    document.querySelector('input[type=file]').value = null
-    await store.child(file.name).put(file)
-    await db.child('music').push(file.name.replace('.mp3', ''))
+    const uploadTask = store.child(file.name).put(file)
+
+    uploadTask.on('state_changed', snap => {
+      var progress = (snap.bytesTransferred / snap.totalBytes) * 100;
+      document.querySelector('.progress').innerHTML = progress + '%'
+
+    }, error => {
+      console.log(error)
+    }, () => {
+      document.querySelector('.progress').innerHTML = 'Done'
+      db.child('music').push(file.name.replace('.mp3', ''))
+      document.querySelector('input[type=file]').value = null
+      window.location.reload()
+    })
   } else {
     alert('Select a song')
   }
