@@ -1,5 +1,5 @@
 const db = firebase.database().ref()
-const stor = firebase.storage().ref()
+const store = firebase.storage().ref()
 
 db.child('music').once('value', snap => {
   const list = snap.val()
@@ -13,9 +13,18 @@ db.child('music').once('value', snap => {
 })
 
 function playIt(song) {
-  stor.child(`${song}.mp3`).getDownloadURL().then(url => {
+  store.child(`${song}.mp3`).getDownloadURL().then(url => {
     document.querySelector('audio').setAttribute('src', url)
   })
 }
 
-// db.child('music').push('Morgenshtern - последняя.mp3')
+document.querySelector('.upload').onclick = async () => {
+  const file = document.querySelector('input[type=file]').files[0]
+  if (file) {
+    document.querySelector('input[type=file]').value = null
+    await store.child(file.name).put(file)
+    await db.child('music').push(file.name.replace('.mp3', ''))
+  } else {
+    alert('Select a song')
+  }
+}
